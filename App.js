@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet, Image, Button, Alert, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, Image, Button, Alert, TouchableOpacity, Platform } from 'react-native';
 import imageCat from './assets/cat.png';
 import * as imagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
+import uploadToAnonymousFilesAsync from 'anonymous-files';
 
 
 const App = () => {
@@ -22,12 +23,20 @@ const App = () => {
     if (pickerResult.cancelled === true) {
       return;
     }
-    setSelectedImage({ localUri: pickerResult.uri })
+    if (Platform.OS === 'web') {
+      const remoteUri = await uploadToAnonymousFilesAsync(pickerResult.uri)
+      setSelectedImage({
+        localUri: pickerResult.uri,
+        remoteUri
+      })
+    } else {
+      setSelectedImage({ localUri: pickerResult.uri })
+    }
   }
 
   const openShareDialog = async () => {
     if (!(await Sharing.isAvailableAsync())) {
-      alert('Compartir no es compatible en tu plataforma')
+      alert(`La imagen esta disponible para compartir en: ${selectedImage.remoteUri}`)
       return;
     }
     await Sharing.shareAsync(selectedImage.localUri);
