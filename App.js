@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Text, View, StyleSheet, Image, Button, Alert, TouchableOpacity } from 'react-native';
 import imageCat from './assets/cat.png';
 import * as imagePicker from 'expo-image-picker';
+import * as Sharing from 'expo-sharing';
 
 
 const App = () => {
@@ -24,14 +25,26 @@ const App = () => {
     setSelectedImage({ localUri: pickerResult.uri })
   }
 
+  const openShareDialog = async () => {
+    if (!(await Sharing.isAvailableAsync())) {
+      alert('Compartir no es compatible en tu plataforma')
+      return;
+    }
+    await Sharing.shareAsync(selectedImage.localUri);
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Hello Word</Text>
-      <Image
-        source={{ uri: selectedImage !== null ? selectedImage.localUri : 'https://picsum.photos/200/200' }}
-        //source={imageCat}
-        style={styles.image}>
-      </Image>
+      <TouchableOpacity
+        onPress={openImagePickerAsync}
+      >
+        <Image
+          source={{ uri: selectedImage !== null ? selectedImage.localUri : 'https://picsum.photos/200/200' }}
+          //source={imageCat}
+          style={styles.image}>
+        </Image>
+      </TouchableOpacity>
       {/* <Button
         title='hola'
         color='red'
@@ -39,12 +52,17 @@ const App = () => {
         onPress={() => Alert.alert('Boom! ')}
       >
       </Button> */}
-      <TouchableOpacity
-        style={styles.button}
-        onPress={openImagePickerAsync}
-      >
-        <Text style={styles.buttonText}>Press Me</Text>
-      </TouchableOpacity>
+      {
+        selectedImage ?
+          <TouchableOpacity
+            style={styles.button}
+            onPress={openShareDialog}
+          >
+            <Text style={styles.buttonText}>Share Image</Text>
+          </TouchableOpacity>
+          : <View></View>
+      }
+
     </View >
   )
 }
